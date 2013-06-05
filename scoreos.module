@@ -1,0 +1,379 @@
+<?PHP
+$incpath = drupal_get_path('module','scoreos')."/includes";
+//echo $incpath;
+include_once($incpath.'/incCTGFFLfunctions.php');
+include_once($incpath.'/incConnectDBs.php');
+
+//drupal_add_js('$incpath/file.js');
+//jquery_plugin_add('tooltip');
+drupal_add_js($incpath.'/script.js');
+
+function scoreos_perm()
+{
+    return array(
+        'access score report',
+        'access team info',
+        'access team info2',
+        'access transaction report',
+        'submit transactions for user\'s team',
+        'submit FCFS transactions for user\'s team',
+        'submit transactions for all teams',
+        'view draft board',
+        'view rosters',
+        'view rosters by NCAA',
+        'view rosters by NFL',
+		'view standings',
+		'edit players by team',
+		'draft players',
+		'set lineup',
+		'player search',
+		'waiver requests',
+		'whiff score report',
+    );
+}
+
+function scoreos_access($op, $node, $account)
+{
+    switch ($node)
+    {
+        case 'scorereport':
+            return user_access('access score report', $account);
+        case 'transactionreport':
+            return user_access('access transaction report', $account);
+        case 'teaminfo':
+            return user_access('access team info', $account);
+        case 'teaminfo2':
+            return user_access('access team info2', $account);
+        case 'starttransaction':
+            return user_access('submit transactions for user\'s team', $account);
+        case 'startfcfstransaction':
+            return user_access('submit FCFS transactions for user\'s team', $account);
+        case 'admintransaction':
+            return user_access('submit transactions for all teams', $account);
+        case 'draftboard':
+            return user_access('view draft board', $account);
+        case 'rosters':
+            return user_access('view rosters', $account);
+        case 'rostersncaa':
+            return user_access('view rosters by NCAA', $account);
+        case 'rostersnfl':
+            return user_access('view rosters by NFL', $account);
+        case 'standings':
+            return user_access('view standings', $account);
+        case 'playeredit':
+            return user_access('edit players by team', $account);
+        case 'draftplayers':
+            return user_access('draft players', $account);
+        case 'setlineup':
+            return user_access('set lineup', $account);
+        case 'player search':
+            return user_access('player search', $account);
+        case 'waiver requests':
+            return user_access('waiver requests', $account);
+        case 'whiff score report':
+            return user_access('whiff score report', $account);
+    }
+}
+
+function scoreos_theme() {
+	return array(
+		'setlineup_form' => array(
+			'arguments' => array(),
+		),
+		'waiverrequests_form' => array(
+			'arguments' => array(),
+		),
+		'playersearch_form' => array(
+			'arguments' => array(),
+		),
+		'draftplayers_form' => array(
+			'arguments' => array(),
+		),
+	);
+}
+
+function scoreos_menu()
+{
+    $items = array();
+    
+    $items['scoreos/scorereport'] = array(
+        'title' => 'Score Report',
+        'page callback' => 'scorereport_all',
+        'access arguments' => array('access score report'),
+		'file' => 'scorereport.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+	
+    $items['scoreos/transactionreport'] = array(
+        'title' => 'Transaction Report',
+        'page callback' => 'transactionreport_all',
+        'access arguments' => array('access transaction report'),
+		'file' => 'transactionreport.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/starttransaction'] = array(
+        'title' => 'Start Transaction',
+        'page callback' => 'starttransaction_all',
+        'access arguments' => array('submit transactions for user\'s team'),
+		'file' => 'starttransaction.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/startfcfstransaction'] = array(
+        'title' => 'FCFS Transaction',
+        'page callback' => 'fcfstransaction_all',
+        'access arguments' => array('submit FCFS transactions for user\'s team'),
+		'file' => 'fcfstransaction.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/admintransaction'] = array(
+        'title' => 'Admin Transaction',
+        'page callback' => 'admintransaction_all',
+        'access arguments' => array('submit transactions for all teams'),
+		'file' => 'admintransaction.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/teaminfo'] = array(
+        'title' => 'Team Info',
+        'page callback' => 'teaminfo_all',
+        'access arguments' => array('access team info'),
+		'file' => 'teaminfo.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/teaminfo2'] = array(
+        'title' => 'Team Info 2',
+        'page callback' => 'teaminfo2_all',
+        'access arguments' => array('access team info2'),
+		'file' => 'teaminfo2.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/rosters'] = array(
+        'title' => 'Rosters by team',
+        'page callback' => 'rosters_all',
+        'access arguments' => array('view rosters'),
+		'file' => 'rosters.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/draftboard'] = array(
+        'title' => 'Draft Board',
+        'page callback' => 'draftboard_all',
+        'access arguments' => array('view draft board'),
+		'file' => 'draftboard.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/rostersncaa'] = array(
+        'title' => 'Rosters by NCAA team',
+        'page callback' => 'rostersncaa_all',
+        'access arguments' => array('view rosters by NCAA'),
+		'file' => 'rostersncaa.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/rostersnfl'] = array(
+        'title' => 'Rosters by NFL team',
+        'page callback' => 'rostersnfl_all',
+        'access arguments' => array('view rosters by NFL'),
+		'file' => 'rostersnfl.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+/*    $items['scoreos/standings'] = array(
+        'title' => 'Standings',
+        //'page callback' => 'playeredit_all',
+        'access arguments' => array('edit players by team'),
+		//'file' => 'playeredit.inc',
+		//'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['scoreos/playeredit'] = array(
+        'title' => 'Edit players by team',
+        'page callback' => 'playeredit_all',
+        'access arguments' => array('edit players by team'),
+		'file' => 'playeredit.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+*/
+    $items['scoreos/draftplayers'] = array(
+        'title' => 'Draft players',
+        'page callback' => 'draftplayers_all',
+        'access arguments' => array('draft players'),
+		'file' => 'draftplayers.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/setlineup'] = array(
+        'title' => 'Set Lineup',
+        'page callback' => 'setlineup_all',
+        'access arguments' => array('set lineup'),
+		'file' => 'setlineup.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/playersearch'] = array(
+        'title' => 'Player Search',
+        'page callback' => 'playersearch_all',
+        'access arguments' => array('player search'),
+		'file' => 'playersearch.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/waiverrequests'] = array(
+        'title' => 'Waiver Requests',
+        'page callback' => 'waiverrequests_all',
+        'access arguments' => array('Waiver Requests'),
+		'file' => 'waiverrequests.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['scoreos/whiffscorereport'] = array(
+        'title' => 'WHIFF Score Report',
+        'page callback' => 'whiffscorereport_all',
+        'access arguments' => array('whiff score report'),
+		'file' => 'whiffscorereport.inc',
+		'file path' => drupal_get_path('module','scoreos')."/includes",
+        'type' => MENU_NORMAL_ITEM,
+    );
+	
+    return $items;
+    
+}
+
+function scoreos_block($op = 'list', $delta=0, $edit=array())
+{
+	if ($op == "list")
+	{
+		// Generate listing of blocks from this module, for the admin/block page
+		$blocks[0]['info'] = t('Standings');
+		return $blocks;
+	}
+	elseif ($op == "view")
+	{
+		$leaguedb = connectdbs();
+        $leagueurl = $_SERVER['SERVER_NAME'];
+        if (substr($leagueurl,0,4) == "www.")
+        {
+            $leagueurl = substr($leagueurl,4);
+        }
+        if ($leagueurl == "open-stats.com")
+        {
+            $leagueurl = "ncaaproject.com";
+        }
+        $leagueidquery = "SELECT leagueid, lgteaswr FROM leagues WHERE leagueurl = '$leagueurl'";
+        $leaguerow = $leaguedb->queryRow($leagueidquery);
+        DBerror($leagueidquery, $leaguerow);
+        
+        $leagueid = $leaguerow['leagueid'];
+
+        $divisionquery = "SELECT COUNT(division_id) FROM divisions, conferences WHERE divisions.conference_id = conferences.conference_id AND league_id =$leagueid";
+        $divisions = $leaguedb->queryOne($divisionquery);
+        DBerror($divisionquery, $divisions);
+
+        if ($leagueid == 2)
+        {
+            $sortorder = "confwins desc, wins desc";
+        }
+        else
+        {
+            $sortorder = "wins desc, confwins desc";
+        }
+        
+		if ($divisions)
+		{
+			$standingsquery = "SELECT a.teamid as teamid, teamabbr, primcolor, seccolor, wins, losses, confwins, conflosses, totalpoints, conference_name, division_name FROM teams a, standings b, conferences c, divisions d WHERE active = 1 and a.teamid=b.teamid and a.leagueid = $leagueid and c.league_id = $leagueid and a.conferenceid = c.conference_id AND c.conference_id = d.conference_id AND a.divisionid = d.division_id ORDER by conference_name, division_name, $sortorder , totalpoints desc, teamabbr";
+		}
+		else
+		{
+			$standingsquery = "SELECT a.teamid as teamid, teamabbr, primcolor, seccolor, wins, losses, confwins, conflosses, totalpoints, conference_name FROM teams a, standings b, conferences c WHERE active = 1 and a.teamid=b.teamid and a.leagueid = $leagueid and c.league_id = $leagueid and a.conferenceid = c.conference_id ORDER by conference_name, $sortorder , totalpoints desc, teamabbr";
+		}
+		$standingsresult = $leaguedb->query($standingsquery);
+		DBerror($standingsquery,$standingsresult);
+		//$standingscontent = "<table>";
+        $standingscontent = '';
+		$currentdiv = '';
+		$row = array();
+		while ($standingsrow = $standingsresult->fetchrow())
+		{
+			extract ($standingsrow, EXTR_PREFIX_ALL, "standings");
+			if ($divisions)
+			{
+				if ($standings_conference_name != $currentconf)
+				{
+					if (isset($header))
+					{
+						$standingscontent .= theme('table', $header, $rows);
+					}
+					$header = array();
+					$rows = array();
+					$currentconf = $standings_conference_name;
+					$header = array('data' => $currentconf,'W','L','CW','CL','Pts');
+				}
+				if ($standings_division_name != $currentdiv)
+				{
+					$row[] = array('data' => $standings_division_name, 'colspan'=>6);
+                    $rows[] = $row;
+                    $row=array();
+					$currentdiv = $standings_division_name;
+				}
+			}
+			else
+			{
+				if ($standings_conference_name != $currentconf)
+				{
+					if (isset($header))
+					{
+						$standingscontent .= theme('table', $header, $rows);
+					}
+					$header = array();
+					$rows = array();
+					$currentconf = $standings_conference_name;
+					if ($leagueid != 6)
+					{
+						$header = array('data' => $currentconf,'W','L','CW','CL','Pts');
+					}
+					else
+					{
+						$header = array('data' => $currentconf,'W','L','Pts');
+					}
+				}
+			}
+			$row[] = array('data' => $standings_teamabbr);
+		        $row[] = array('data' => $standings_wins);
+		        $row[] = array('data' => $standings_losses);
+		        if ($leagueid != 6) $row[] = array('data' => $standings_confwins);
+		        if ($leagueid != 6) $row[] = array('data' => $standings_conflosses);
+		        $row[] = array('data' => $standings_totalpoints);
+		        $rows[] = $row;
+		        $row = array();
+		}
+        $standingscontent .= theme('table', $header, $rows);
+		//$standingscontent .= "</table>";
+		$blocks['subject'] = "Standings";
+		$blocks['content'] = $standingscontent;
+		return $blocks;
+	}
+}
+?>

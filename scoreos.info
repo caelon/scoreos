@@ -1,0 +1,6 @@
+;$Id$
+name = "ScoreOS"
+description = "Fantasy sports league system"
+package = "ScoreOS"
+core = 6.x
+php = 5.1
